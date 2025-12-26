@@ -1,0 +1,6 @@
+.env
+node_modules/
+
+/services/*/node_modules/
+
+/services/*/.env

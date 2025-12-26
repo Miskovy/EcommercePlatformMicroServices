@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # --- Infrastructure: Databases ---
+  
+  # MongoDB (For Product Service)
+  mongo:
+    image: mongo:6
+    container_name: ecommerce_mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  # PostgreSQL (For User/Order Services - to be used later)
+  postgres:
+    image: postgres:15
+    container_name: ecommerce_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ecommerce_users
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # --- Microservices ---
+
+  # Product Service
+  product-service:
+    build: 
+      context: ./ecommerce-platform/services/product-service
+      dockerfile: Dockerfile
+    container_name: ecommerce_product_service
+    restart: on-failure
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - MONGO_URI=mongodb://mongo:27017/product_db
+      - NODE_ENV=development
+    depends_on:
+      - mongo
+    volumes:
+      # Map local code to container for live reloading
+      - ./ecommerce-platform/services/product-service/src:/app/src
+      - /app/node_modules
+
+volumes:
+  mongo_data:
+  postgres_data:

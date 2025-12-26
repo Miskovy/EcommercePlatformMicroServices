@@ -1,0 +1,11 @@
+in a microservices architecture, the best practice is Database per Service. This allows you to pick the best tool for the job (Polyglot Persistence).
+
+User Service: PostgreSQL (Relational is best for structured user data and relationships).
+
+Product Service: MongoDB (NoSQL is excellent for flexible product schemas and catalog attributes).
+
+Shopping Cart: Redis (Key-value store is fastest for temporary, volatile data like active carts).
+
+Order Service: PostgreSQL (ACID compliance is strictly required for financial transactions).
+
+Payment Service: PostgreSQL (Transaction logs) + Stripe/PayPal SDKs.
