@@ -6,6 +6,9 @@ export interface IProduct extends Document{
     price: number,
     stock: number,
     category: Types.ObjectId,
+    MainImage: string,
+    GalleryImages: string[],
+    updatedAt: Date,
     createdAt: Date
 }
 
@@ -29,7 +32,14 @@ const ProductSchema: Schema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Category',
         required: true
-    }
+    },
+    MainImage: {
+        type: String,
+        required: true
+    },
+    GalleryImages: [{
+        type: String
+    }]
 }, {timestamps:true});
 
 export default mongoose.model<IProduct>('Product', ProductSchema);

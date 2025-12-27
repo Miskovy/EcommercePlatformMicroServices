@@ -48,6 +48,7 @@ services:
       # Map local code to container for live reloading
       - ./ecommerce-platform/services/product-service/src:/app/src
       - /app/node_modules
+      - ./ecommerce-platform/services/product-service/uploads:/app/uploads
 
 volumes:
   mongo_data:
