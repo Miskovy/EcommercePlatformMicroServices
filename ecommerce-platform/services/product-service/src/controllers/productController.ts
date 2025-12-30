@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { BadRequest } from '../Errors/BadRequest';
 import ProductModel from '../models/Product';
 import { SuccessResponse } from '../utils/response';
-import mongoose from 'mongoose';
+import mongoose, { model } from 'mongoose';
 import { saveBase64Image } from '../utils/handleImages';
 import fs from 'fs';
 
@@ -58,16 +58,11 @@ export const createProduct = async (req: Request, res: Response) => {
 
 
 export const getAllProducts = async (req: Request, res: Response) => {
-    try {
-        const products = await ProductModel.find().populate('category parentCategory_Id');
+        const products = await ProductModel.find().populate({ path: 'category' , populate: { path: 'parentCategory_Id' , model: 'Category' , select: 'name' } });
         return SuccessResponse(res, {
             message: "Products fetched successfully",
             data: products
         });
-    } catch (error) {
-        res.status(500).json({ message: "Internal Server Error", error });
-    }
-
 };
 
 
@@ -78,7 +73,7 @@ export const getProductById = async (req: Request, res: Response) => {
             message: "Invalid ID format. Must be a 24-character hex string."
         });
     }
-    const product = await ProductModel.findById(id).populate('category parentCategory_Id');
+    const product = await ProductModel.findById(id).populate({ path: 'category' , populate: { path: 'parentCategory_Id' , model: 'Category' , select: 'name' } });
     if (!product) {
         return res.status(404).json({
             message: "Product not found"
@@ -91,15 +86,13 @@ export const getProductById = async (req: Request, res: Response) => {
 };
 
 export const getProductsByCategory = async (req: Request, res: Response) => {
-    try {
-
         const { categoryId } = req.params;
         if (!mongoose.Types.ObjectId.isValid(categoryId)) {
             return res.status(400).json({
                 message: "Invalid Category ID format. Must be a 24-character hex string."
             });
         }
-        const products = await ProductModel.find({ category: categoryId }).populate('category parentCategory_Id');
+        const products = await ProductModel.find({ category: categoryId }).populate({ path: 'category' , populate: { path: 'parentCategory_Id' , model: 'Category' , select: 'name' } });
         if (!products) {
             return res.status(404).json({
                 message: "Category not found"
@@ -114,14 +107,10 @@ export const getProductsByCategory = async (req: Request, res: Response) => {
             message: "Products fetched successfully",
             data: products
         });
-    } catch (error) {
-        res.status(500).json({ message: "Internal Server Error", error });
-    }
 
 };
 
 export const deleteProduct = async (req: Request, res: Response) => {
-    try {
         const { id } = req.params;
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({
@@ -140,14 +129,9 @@ export const deleteProduct = async (req: Request, res: Response) => {
             data: product
         });
 
-
-    } catch (error) {
-        res.status(500).json({ message: "Internal Server Error", error });
-    }
 };
 
 export const updateProduct = async (req: Request, res: Response) => {
-    try {
         const { id } = req.params;
 
         // 1. Validate ID
@@ -211,12 +195,4 @@ export const updateProduct = async (req: Request, res: Response) => {
             message: "Product updated successfully",
             data: product
         });
-
-    } catch (error: any) {
-        console.error(error); // Log error for debugging
-        res.status(500).json({
-            message: "Internal Server Error",
-            error: error.message
-        });
-    }
 };

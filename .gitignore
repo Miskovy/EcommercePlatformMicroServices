@@ -4,3 +4,6 @@ node_modules/
 /services/*/node_modules/
 
 /services/*/.env
+
+/services/*/uploads/
+ecommerce-platform/services/product-service/uploads/

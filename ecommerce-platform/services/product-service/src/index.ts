@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request , Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import ApiRoute from './routes/index';
@@ -25,6 +25,21 @@ app.use("/api", ApiRoute);
 
 app.use((req, res, next) => {
     throw new Error('Route not found');
+});
+
+// Global Error Handler
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+    console.error(err); // Log for debugging
+
+    const statusCode = err.statusCode || 500;
+    const message = err.message || "Internal Server Error";
+
+    res.status(statusCode).json({
+        success: false,
+        message: message,
+        // Optional: Send stack trace only in development
+        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
 });
 
 app.listen(PORT, () => {
