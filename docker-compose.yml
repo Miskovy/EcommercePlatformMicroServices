@@ -49,7 +49,24 @@ services:
       - ./ecommerce-platform/services/product-service/src:/app/src
       - /app/node_modules
       - ./ecommerce-platform/services/product-service/uploads:/app/uploads
-
+  user-service:
+    build: 
+      context: ./ecommerce-platform/services/user-service
+      dockerfile: Dockerfile
+    container_name: ecommerce_user_service
+    restart: on-failure
+    ports:
+      - "3002:3002"
+    environment:
+      - PORT=3002
+      # Use 'postgres' (service name) as host
+      - DATABASE_URL=postgresql://admin:password@postgres:5432/ecommerce_users
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - postgres
+    volumes:
+      - ./ecommerce-platform/services/user-service/src:/app/src
+      - /app/node_modules
 volumes:
   mongo_data:
   postgres_data:

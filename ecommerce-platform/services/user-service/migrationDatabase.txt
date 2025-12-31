@@ -1,0 +1,1 @@
+docker compose run --rm user-service npx prisma migrate dev --name init
