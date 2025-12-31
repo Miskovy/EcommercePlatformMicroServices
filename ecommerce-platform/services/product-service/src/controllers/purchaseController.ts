@@ -6,6 +6,7 @@ import mongoose from 'mongoose';
 import ProductModel from '../models/Product';
 import SupplierModel from '../models/supplier';
 import FinancialAccountModel from '../models/FinancialAccount';
+import { createPurchaseSchema } from '../validation/purchase.schema';
 
 interface MulterRequest extends Request {
     files: {
@@ -14,61 +15,62 @@ interface MulterRequest extends Request {
 }
 
 export const createPurchase = async (req: Request, res: Response) => {
-    const { productId, supplierId, quantity, totalPrice, financialAccountId } = req.body;
+    const validData = createPurchaseSchema.parse(req.body); // Validate input data
+    // const { productId, supplierId, quantity, totalPrice, financialAccountId } = req.body;
     const files = (req as MulterRequest).files;
 
-    if (!productId || !supplierId || !quantity || !totalPrice || !financialAccountId) {
-        throw new BadRequest("Please fill in required fields");
-    }
+    // if (!productId || !supplierId || !quantity || !totalPrice || !financialAccountId) {
+    //     throw new BadRequest("Please fill in required fields");
+    // }
     // Check if files exist AND if the specific 'receiptImage' field has a file
     if (!files || !files['receiptImage'] || files['receiptImage'].length === 0) {
         throw new BadRequest("Receipt image is required");
     }
-    const product = await ProductModel.findById(productId);
+    const product = await ProductModel.findById(validData.productId);
     if (!product) {
         throw new BadRequest("Product not found");
     }
 
-    const supplier = await SupplierModel.findById(supplierId);
+    const supplier = await SupplierModel.findById(validData.supplierId);
     if (!supplier) {
         throw new BadRequest("Supplier not found");
     }
 
-    if (quantity <= 0) {
-        throw new BadRequest("Quantity must be greater than zero");
-    }
-    if (totalPrice <= 0) {
-        throw new BadRequest("Total price must be greater than zero");
-    }
+    // if (quantity <= 0) {
+    //     throw new BadRequest("Quantity must be greater than zero");
+    // }
+    // if (totalPrice <= 0) {
+    //     throw new BadRequest("Total price must be greater than zero");
+    // }
 
     if (!files || !files['receiptImage']) {
         throw new Error("Receipt image is required");
     }
 
     const receiptImagePath = files['receiptImage'][0].path;
-    const FinancialAccount = await FinancialAccountModel.findById(financialAccountId);
+    const FinancialAccount = await FinancialAccountModel.findById(validData.financialAccountId);
     if (!FinancialAccount) {
         throw new BadRequest("Financial Account not found");
     }
-    if (FinancialAccount.balance < totalPrice) {
+    if (FinancialAccount.balance < validData.totalPrice) {
         throw new BadRequest("Insufficient balance in the financial account");
     }
     // Deduct the totalPrice from the financial account balance
-    FinancialAccount.balance -= totalPrice;
+    FinancialAccount.balance -= validData.totalPrice;
     await FinancialAccount.save();
 
     //Add stock to the product
-    product.stock += Number(quantity);
+    product.stock += Number(validData.quantity);
     await product.save();
 
     // Create a new purchase record
     const purchase = new PurchaseModel({
-        productId,
-        supplierId,
-        quantity,
-        totalPrice,
+        productId: validData.productId,
+        supplierId: validData.supplierId,
+        quantity: validData.quantity,
+        totalPrice: validData.totalPrice,
         receiptImage: receiptImagePath,
-        financialAccountId
+        financialAccountId: validData.financialAccountId
     });
     await purchase.save();
 
