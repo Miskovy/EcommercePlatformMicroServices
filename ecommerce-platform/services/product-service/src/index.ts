@@ -11,6 +11,12 @@ import rateLimit from 'express-rate-limit';
 dotenv.config();
 
 const app = express();
+
+app.use((req, res, next) => {
+  console.log(`[Product Service] Incoming Request: ${req.method} ${req.url}`);
+  next();
+});
+
 const PORT = process.env.PORT || 3001;
 
 // Rate Limiter Configuration
@@ -65,7 +71,7 @@ app.use(limiter);
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // 7. Routes
-app.use("/api", ApiRoute);
+app.use("/", ApiRoute);
 
 // 8. 404 Handler
 app.use((req: Request, res: Response, next: NextFunction) => {

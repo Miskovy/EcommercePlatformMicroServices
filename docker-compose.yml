@@ -28,7 +28,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   # --- Microservices ---
-
+  
   # Product Service
   product-service:
     build: 
@@ -67,6 +67,19 @@ services:
     volumes:
       - ./ecommerce-platform/services/user-service/src:/app/src
       - /app/node_modules
+  gateway:
+    build: 
+      context: ./ecommerce-platform/gateway
+    container_name: ecommerce_gateway
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - PRODUCT_SERVICE_URL=http://product-service:3001
+      - USER_SERVICE_URL=http://user-service:3002
+    depends_on:
+      - product-service
+      - user-service
 volumes:
   mongo_data:
   postgres_data:
