@@ -21,9 +21,9 @@ app.get('/health', (req, res) => {
 // IMPORTANT: The targets must use the DOCKER CONTAINER NAMES
 const productServiceUrl = process.env.PRODUCT_SERVICE_URL || 'http://product-service:3001';
 const userServiceUrl = process.env.USER_SERVICE_URL || 'http://user-service:3002';
+const cartServiceUrl = process.env.CART_SERVICE_URL || 'http://cart-service:3003';
 
-
-// Forward /api/products request to Product Service
+// Forward request to Product Service
 app.use('/api/products', createProxyMiddleware({
   target: productServiceUrl,
   changeOrigin: true,
@@ -33,7 +33,7 @@ app.use('/api/products', createProxyMiddleware({
 }));
 
 
-// Forward /api/auth request to User Service
+// Forward request to User Service
 app.use('/api/user', createProxyMiddleware({
   target: userServiceUrl,
   changeOrigin: true,
@@ -42,6 +42,14 @@ app.use('/api/user', createProxyMiddleware({
   },
 }));
 
+// Forward request to Cart Service
+app.use('/api/cart', createProxyMiddleware({
+  target: cartServiceUrl,
+  changeOrigin: true,
+  pathRewrite: {
+    '^/api/cart': '', // Gateway: /api/cart -> Service: /
+  },
+}));
 
 app.listen(PORT, () => {
   console.log(`API Gateway running on port ${PORT}`);
